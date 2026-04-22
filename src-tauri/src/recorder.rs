@@ -77,15 +77,32 @@ impl Recorder {
             update_overlay(app, &RecordingState::Transcribing);
         }
 
+        // Run the transcribe pipeline; always reset state afterwards
+        let result = self.do_transcribe(app, settings, app_dir).await;
+
+        {
+            let mut state = self.state.lock().unwrap();
+            *state = RecordingState::Ready;
+            let _ = app.emit("recording-state", RecordingState::Ready);
+            update_overlay(app, &RecordingState::Ready);
+        }
+
+        result
+    }
+
+    async fn do_transcribe(
+        &self,
+        app: &AppHandle,
+        settings: &Settings,
+        app_dir: &PathBuf,
+    ) -> Result<String, String> {
         let temp_path = app_dir.join("temp_recording.wav");
 
-        // Save audio
         {
             let mut recorder = self.audio_recorder.lock().unwrap();
             recorder.stop_and_save(&temp_path)?;
         }
 
-        // Transcribe
         let raw_text = match settings.engine.as_str() {
             "local" => {
                 let model_path = app_dir.join(transcribe_local::model_filename(&settings.whisper_model));
@@ -97,23 +114,12 @@ impl Recorder {
             _ => return Err(format!("Unknown engine: {}", settings.engine)),
         };
 
-        // Cleanup temp file
         let _ = std::fs::remove_file(&temp_path);
 
-        // Clean up text
         let cleaned = cleanup_text(&raw_text);
 
-        // Auto-paste
         if !cleaned.is_empty() {
             paste_text(&cleaned)?;
-        }
-
-        // Reset state
-        {
-            let mut state = self.state.lock().unwrap();
-            *state = RecordingState::Ready;
-            let _ = app.emit("recording-state", RecordingState::Ready);
-            update_overlay(app, &RecordingState::Ready);
         }
 
         Ok(cleaned)
