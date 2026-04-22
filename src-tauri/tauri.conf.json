@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Typr",
+  "productName": "s4voice",
   "version": "0.1.0",
-  "identifier": "com.typr.app",
+  "identifier": "com.s4ai.s4voice",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -13,7 +13,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "Typr",
+        "title": "s4voice",
         "width": 900,
         "height": 600,
         "minWidth": 700,

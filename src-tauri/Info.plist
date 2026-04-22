@@ -4,5 +4,7 @@
 <dict>
     <key>NSMicrophoneUsageDescription</key>
     <string>Typr needs microphone access to record your voice for dictation.</string>
+    <key>NSAppleEventsUsageDescription</key>
+    <string>s4voice needs to send keystrokes to paste transcribed text into the focused app.</string>
 </dict>
 </plist>
